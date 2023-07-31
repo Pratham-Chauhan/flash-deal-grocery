@@ -8,8 +8,8 @@ saved_location = './Flash_deal_product_list.csv'
 if os.path.exists(saved_location):
     FD = pd.read_csv(saved_location)
 else:
-    FD = pd.DataFrame(columns=['Item','Quantity', 'Price', 'Normal Price'])
-
+    column = ['ID','Start_time','End_time', 'Start_time_String', 'End_time_string', 'Item','Quantity', 'Price', 'Normal Price', 'Diff.']
+    FD = pd.DataFrame(columns=column)
 
 headers = {
     'authority': 'gcptest.crofarm.com',
@@ -38,6 +38,8 @@ params = {
 }
 
 
+import pdb
+# pdb.set_trace()
 def extract_info():
     x = requests.get('https://gcptest.crofarm.com/otipy/web/feed/v1/', params=params, headers=headers)
 
@@ -49,11 +51,21 @@ def extract_info():
     print('Flash Deal Items:', len(flash_deal))
     # print("{:35s} | {:10s} | {:5s} | {:5s}".format(FD.columns))
     for prod in flash_deal:
+        
         price = prod['price']
         id = prod['prod_id']
         
-        start_time = prod[1690615869]
-        end_time = prod[1690826340]
+        start_time = prod['start_time']
+        start_time_string = datetime.fromtimestamp(start_time)
+        end_time = prod['end_time']
+        end_time_string = datetime.fromtimestamp(end_time)
+
+        # pdb.set_trace()
+        if not FD.empty:
+            if (id in FD['ID'].values) & (start_time in FD['Start_time'].values): 
+                print('Flash deal item already stored.', (id, start_time))
+                continue
+
 
         # normal product details
         prod = prod['normal_product']
@@ -61,18 +73,14 @@ def extract_info():
         quantity = prod['pack_qt']
         normal_price = prod['price']
 
-        d = [name, quantity, price, normal_price]
+        d = [id,start_time, end_time,start_time_string, end_time_string, name, quantity, price, normal_price, (normal_price-price)]
         # print("{:35s} | {:10s} | ₹{:5d} | ₹{:5d}".format(*d))
         FD.loc[len(FD)] = d
 
 extract_info()
 print(FD)
 
-FD.to_csv(saved_location)
-
-
-
-
+FD.to_csv(saved_location, index=False)
 
 
 
