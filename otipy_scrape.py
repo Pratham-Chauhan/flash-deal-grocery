@@ -23,11 +23,11 @@ def extract_info(i):
 
     prod = i['normal_product']
     id = prod['id']
-
     # pdb.set_trace()
     if not FD.empty:
         for row in FD.to_numpy():
-            if (id == row[0]) & (start_time == row[1]):
+            # instead of that, TODO - only add those item if there price got changed.
+            if (id == row[0]) & (start_time == row[1]): 
                 print('item already stored.', (id, start_time))
                 return
 
