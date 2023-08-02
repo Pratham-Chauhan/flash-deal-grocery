@@ -15,9 +15,12 @@ else:
     FD = pd.DataFrame(columns=column)
 
 
+count = 0
 def extract_info(i):
+    global count 
     price = i['price']  # Limited Price
-
+    
+    # --TODO-- delete these start_time_string and end_time_string, also the columns from csv
     start_time, end_time = i['start_time'], i['end_time']
     start_time_string = datetime.fromtimestamp(start_time)
     end_time_string = datetime.fromtimestamp(end_time)
@@ -25,21 +28,23 @@ def extract_info(i):
     prod = i['normal_product']
     id = prod['id']
     # pdb.set_trace()
+    name, quantity, normal_price = prod['name'], prod['pack_qt'], prod['price']
+
     if not FD.empty:
         for row in FD.to_numpy():
-            if (id == row[0]) & (price == row[7]): 
-                print('item already stored.', (id, start_time))
+            if (id == row[0]) & (price == row[7]):
+                # print('item already stored.', (id, name))
                 return
 
-    name, quantity, normal_price = prod['name'], prod['pack_qt'], prod['price']
 
     d = [id, start_time, end_time, start_time_string, end_time_string,
          name, quantity, price, normal_price, (normal_price-price)]
     # print("{:35s} | {:10s} | ₹{:5d} | ₹{:5d}".format(*d))
     FD.loc[len(FD)] = d
-
+    count += 1
 
 def scrape():
+    global count
     headers = {
         'authority': 'gcptest.crofarm.com',
         'accept': '*/*',
@@ -75,13 +80,36 @@ def scrape():
     flash_deal = jdata[1]['data']['items']
 
     print('Flash Deal Items:', len(flash_deal))
+    count = 0
     for item in flash_deal:
         extract_info(item)
+    if count == 0:
+        print('No Update bro.')
+    else:
+        print(f'{count} items added.\n')
+
 
 for t in range(100):
     scrape()
     # print(FD)
     FD.to_csv(saved_location, index=False)
 
+    deal_start_time = FD['End_time_string'].iloc[-1]
+    print('Come back at around %s'%deal_start_time)
     print("Waiting 10 mins")
-    sleep(10*60) # in mins
+    sleep(10*60)  # in mins
+
+# some insight from the data
+df = FD
+# Calculate discount percentage
+df['Discount'] = (df['Diff.']/df['Normal Price'])*100
+df['Discount'] = df.Discount.round(1)
+
+# Create beautiful graph for each items once done scraping
+def create_graph():
+    # play around on jupyter notebook for now
+    pass
+
+
+
+
