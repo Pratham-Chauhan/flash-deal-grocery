@@ -1,6 +1,7 @@
 import pdb
 import requests
 import json
+from time import sleep
 import pandas as pd
 import os.path
 from datetime import datetime
@@ -26,8 +27,7 @@ def extract_info(i):
     # pdb.set_trace()
     if not FD.empty:
         for row in FD.to_numpy():
-            # instead of that, TODO - only add those item if there price got changed.
-            if (id == row[0]) & (start_time == row[1]): 
+            if (id == row[0]) & (price == row[7]): 
                 print('item already stored.', (id, start_time))
                 return
 
@@ -78,8 +78,10 @@ def scrape():
     for item in flash_deal:
         extract_info(item)
 
+for t in range(100):
+    scrape()
+    # print(FD)
+    FD.to_csv(saved_location, index=False)
 
-scrape()
-print(FD)
-
-FD.to_csv(saved_location, index=False)
+    print("Waiting 10 mins")
+    sleep(10*60) # in mins
