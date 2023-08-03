@@ -1,4 +1,4 @@
-# import pdb
+import pdb
 import os.path
 import requests
 import json
@@ -32,15 +32,16 @@ def extract_info(i):
 
     prod = i['normal_product']
     id = prod['id']
-    # pdb.set_trace()
     name, quantity, normal_price = prod['name'], prod['pack_qt'], prod['price']
-    
+    # pdb.set_trace()  
+    # print((name, price))
     # save all the items in current deal no matter price got changed or not
     current_deal_items.append(name)
     if not FD.empty:
         for row in FD.to_numpy():
             # Note: ID is no longer identify an Item, that means, one item can change its ID over time :(
-            if (id == row[5]) & (price == row[7]):
+            # if (name == row[5]) & (price == row[7]):
+            if (start_time == row[1]) & (name == row[5]):
                 # print('item already stored.', (id, name))
                 return
 
@@ -116,12 +117,16 @@ df['Discount'] = (df['Diff.']/df['Normal Price'])*100
 df['Discount'] = df.Discount.round(1)
 
 
-print(current_deal_items)
+# print(current_deal_items)
 # Create beautiful graph for each items once done scraping
 def create_graph():
     # play around on jupyter notebook for now
     current_time = int(time())
     current_time = datetime.fromtimestamp(current_time)
+    
+    plt.style.use('bmh')
+    # fig = plt.figure(figsize=(15,6))
+
     for name in current_deal_items:
         df3 = df[df.Item == name] # filter each item by their name
         
@@ -138,12 +143,7 @@ def create_graph():
 
 
 
-
-
         ''' Customize the style '''
-        # plt.style.use('seaborn-v0_8-notebook')
-        fig = plt.figure(figsize=(15,6))
-
         # Format the date ticks on the x-axis
         date_format = mdates.DateFormatter('%I:%M %p\n %b-%d ')  # Customize the format as per your preference
         plt.gca().xaxis.set_major_formatter(date_format)
@@ -151,12 +151,15 @@ def create_graph():
 
         plt.grid(True, linestyle='--', linewidth=0.5)
         # plt.tick_params(axis='both', labelsize=18)  
-        plt.title(df3['Item'].iloc[0])
+        title = df3['Item'].iloc[0]
+        plt.title(title)
 
         plt.step(x, y2, 'o-', where='post')
         plt.step(x, y, 'o-', where='post')
         
-        plt.show()
-        plt.savefig('sample_plot.png')
+        # plt.show()
+        plt.savefig(f'./img/{title}.png')
+        plt.close()
 
 create_graph()
+
