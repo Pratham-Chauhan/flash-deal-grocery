@@ -33,7 +33,11 @@ def extract_info(i):
     prod = i['normal_product']
     id = prod['id']
     name, quantity, normal_price = prod['name'], prod['pack_qt'], prod['price']
-    # pdb.set_trace()  
+    pdb.set_trace()  
+
+    # -- TODO -- Urgent change, price need to be per kg, cause their price get changed with quantity weight
+    # so what needs to be done is: price/prod['in_kg'] and also in excel, change price to per kg by using formula
+    prod['pack_qt'], prod['in_kg']
     # print((name, price))
     # save all the items in current deal no matter price got changed or not
     current_deal_items.append(name)
@@ -161,5 +165,5 @@ def create_graph():
         plt.savefig(f'./img/{title}.png')
         plt.close()
 
-create_graph()
+#create_graph()
 
