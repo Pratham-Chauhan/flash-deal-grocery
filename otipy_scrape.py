@@ -1,10 +1,15 @@
-import pdb
+# import pdb
+import os.path
 import requests
 import json
-from time import sleep
+
 import pandas as pd
-import os.path
 from datetime import datetime
+from time import sleep, time
+
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import numpy as np
 
 saved_location = './Flash_deal_product_list.csv'
 if os.path.exists(saved_location):
@@ -14,10 +19,10 @@ else:
               'End_time_string', 'Item', 'Quantity', 'Price', 'Normal Price', 'Diff.']
     FD = pd.DataFrame(columns=column)
 
-
+current_deal_items = []
 count = 0
 def extract_info(i):
-    global count 
+    global count, current_deal_items
     price = i['price']  # Limited Price
     
     # --TODO-- delete these start_time_string and end_time_string, also the columns from csv
@@ -29,10 +34,13 @@ def extract_info(i):
     id = prod['id']
     # pdb.set_trace()
     name, quantity, normal_price = prod['name'], prod['pack_qt'], prod['price']
-
+    
+    # save all the items in current deal no matter price got changed or not
+    current_deal_items.append(name)
     if not FD.empty:
         for row in FD.to_numpy():
-            if (id == row[0]) & (price == row[7]):
+            # Note: ID is no longer identify an Item, that means, one item can change its ID over time :(
+            if (id == row[5]) & (price == row[7]):
                 # print('item already stored.', (id, name))
                 return
 
@@ -80,24 +88,26 @@ def scrape():
     flash_deal = jdata[1]['data']['items']
 
     print('Flash Deal Items:', len(flash_deal))
-    count = 0
     for item in flash_deal:
         extract_info(item)
     if count == 0:
         print('No Update bro.')
     else:
-        print(f'{count} items added.\n')
+        print(f'{count} items added & price changed.\n')
 
 
-for t in range(100):
+for t in range(1):
+    # reset count and current-deal-items
+    count, current_deal_items = 0, []
+
     scrape()
     # print(FD)
     FD.to_csv(saved_location, index=False)
 
-    deal_start_time = FD['End_time_string'].iloc[-1]
-    print('Come back at around %s'%deal_start_time)
+    next_deal_time = FD['End_time_string'].iloc[-1]
+    print('Come back at around %s'%next_deal_time)
     print("Waiting 10 mins")
-    sleep(10*60)  # in mins
+    # sleep(10*60)  # in mins
 
 # some insight from the data
 df = FD
@@ -105,11 +115,48 @@ df = FD
 df['Discount'] = (df['Diff.']/df['Normal Price'])*100
 df['Discount'] = df.Discount.round(1)
 
+
+print(current_deal_items)
 # Create beautiful graph for each items once done scraping
 def create_graph():
     # play around on jupyter notebook for now
-    pass
+    current_time = int(time())
+    current_time = datetime.fromtimestamp(current_time)
+    for name in current_deal_items:
+        df3 = df[df.Item == name] # filter each item by their name
+        
+        x = df3['Start_time'].apply(datetime.fromtimestamp).to_numpy()
+        x = np.append(x, np.datetime64(current_time))
+
+        y = df3['Price'].to_numpy()
+        y = np.append(y, y[-1])
+
+        y2 = df3['Normal Price'].to_numpy()
+        y2 = np.append(y2, y2[-1])
+
+        print("X : ", x,"\nY:", y)
 
 
 
 
+
+        ''' Customize the style '''
+        # plt.style.use('seaborn-v0_8-notebook')
+        fig = plt.figure(figsize=(15,6))
+
+        # Format the date ticks on the x-axis
+        date_format = mdates.DateFormatter('%I:%M %p\n %b-%d ')  # Customize the format as per your preference
+        plt.gca().xaxis.set_major_formatter(date_format)
+        plt.xticks(rotation=30)
+
+        plt.grid(True, linestyle='--', linewidth=0.5)
+        # plt.tick_params(axis='both', labelsize=18)  
+        plt.title(df3['Item'].iloc[0])
+
+        plt.step(x, y2, 'o-', where='post')
+        plt.step(x, y, 'o-', where='post')
+        
+        plt.show()
+        plt.savefig('sample_plot.png')
+
+create_graph()
