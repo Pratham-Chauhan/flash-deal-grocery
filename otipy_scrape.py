@@ -16,42 +16,44 @@ if os.path.exists(saved_location):
     FD = pd.read_csv(saved_location)
 else:
     column = ['ID', 'Start_time', 'End_time', 'Start_time_String',
-              'End_time_string', 'Item', 'Quantity', 'Price', 'Normal Price', 'Diff.']
+              'End_time_string', 'Item', 'Price', 'Normal Price', 'Diff.', 'Quantity', 'Quantity (in kg)','Price per kg','Normal Price per kg']
     FD = pd.DataFrame(columns=column)
 
 current_deal_items = []
 count = 0
+
 def extract_info(i):
     global count, current_deal_items
     price = i['price']  # Limited Price
     
-    # --TODO-- delete these start_time_string and end_time_string, also the columns from csv
+    # keep these, it's easier that way to read datetime
     start_time, end_time = i['start_time'], i['end_time']
     start_time_string = datetime.fromtimestamp(start_time)
     end_time_string = datetime.fromtimestamp(end_time)
 
     prod = i['normal_product']
-    id = prod['id']
-    name, quantity, normal_price = prod['name'], prod['pack_qt'], prod['price']
-    pdb.set_trace()  
+    id = prod['id'] # ID is of no use now.
+    name, quantity, quantity_in_kg, normal_price = prod['name'], prod['pack_qt'], prod['in_kg'], prod['price']
+    # pdb.set_trace()  
 
     # -- TODO -- Urgent change, price need to be per kg, cause their price get changed with quantity weight
     # so what needs to be done is: price/prod['in_kg'] and also in excel, change price to per kg by using formula
-    prod['pack_qt'], prod['in_kg']
+    # print(name, prod['pack_qt'], prod['in_kg'] )
+    price_per_kg = price/quantity_in_kg
+    normal_price_per_kg = normal_price/quantity_in_kg
     # print((name, price))
     # save all the items in current deal no matter price got changed or not
     current_deal_items.append(name)
     if not FD.empty:
         for row in FD.to_numpy():
             # Note: ID is no longer identify an Item, that means, one item can change its ID over time :(
-            # if (name == row[5]) & (price == row[7]):
-            if (start_time == row[1]) & (name == row[5]):
+            if (start_time == row[1]) & (name == row[5]): # that is, (Start_time-Name) is primary key and unique
                 # print('item already stored.', (id, name))
                 return
 
 
     d = [id, start_time, end_time, start_time_string, end_time_string,
-         name, quantity, price, normal_price, (normal_price-price)]
+         name, price, normal_price, (normal_price-price), quantity, quantity_in_kg, price_per_kg, normal_price_per_kg]
     # print("{:35s} | {:10s} | ₹{:5d} | ₹{:5d}".format(*d))
     FD.loc[len(FD)] = d
     count += 1
@@ -137,10 +139,10 @@ def create_graph():
         x = df3['Start_time'].apply(datetime.fromtimestamp).to_numpy()
         x = np.append(x, np.datetime64(current_time))
 
-        y = df3['Price'].to_numpy()
+        y = df3['Price per kg'].to_numpy()
         y = np.append(y, y[-1])
 
-        y2 = df3['Normal Price'].to_numpy()
+        y2 = df3['Normal Price per kg'].to_numpy()
         y2 = np.append(y2, y2[-1])
 
         print("X : ", x,"\nY:", y)
@@ -158,12 +160,27 @@ def create_graph():
         title = df3['Item'].iloc[0]
         plt.title(title)
 
-        plt.step(x, y2, 'o-', where='post')
-        plt.step(x, y, 'o-', where='post')
+        plt.step(x, y2, '-', where='post')
+        plt.step(x, y, '-', where='post')
         
-        # plt.show()
+        plt.show()
         plt.savefig(f'./img/{title}.png')
         plt.close()
 
-#create_graph()
+create_graph()
 
+
+
+
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+
+# if __name__ == '__main__':
+#    app.run(debug=True)
