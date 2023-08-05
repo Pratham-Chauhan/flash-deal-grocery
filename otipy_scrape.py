@@ -117,11 +117,11 @@ for t in range(1):
     # sleep(10*60)  # in mins
 
 # some insight from the data
-df = FD
-# Calculate discount percentage
-df['Discount'] = (df['Diff.']/df['Normal Price'])*100
-df['Discount'] = df.Discount.round(1)
-
+# df = FD
+# # Calculate discount percentage
+# df['Discount'] = (df['Diff.']/df['Normal Price'])*100
+# df['Discount'] = df.Discount.round(1)
+# 
 
 # print(current_deal_items)
 # Create beautiful graph for each items once done scraping
@@ -163,24 +163,10 @@ def create_graph():
         plt.step(x, y2, '-', where='post')
         plt.step(x, y, '-', where='post')
         
-        plt.show()
-        plt.savefig(f'./img/{title}.png')
+        # plt.show()
+        plt.savefig(f'./static/img/{title}.png')
         plt.close()
 
-create_graph()
+# create_graph()
 
 
-
-
-from flask import Flask, render_template
-
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-
-
-# if __name__ == '__main__':
-#    app.run(debug=True)
