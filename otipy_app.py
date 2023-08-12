@@ -1,12 +1,15 @@
 from flask import Flask, render_template
 import otipy_scrape as otp
+import subprocess
 
-# print(otp.current_deal_items)
+# run scraping process in backgroud 
+# subprocess.Popen(["rm","-r","some.file"]) 
+# print(otp.create_graph())
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('home.html', menu_items=otp.current_deal_items)
+    return render_template('home.html', menu_items=otp.create_graph())
 
 if __name__ == '__main__':
     app.run(debug=True)

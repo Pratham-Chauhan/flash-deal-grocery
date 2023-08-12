@@ -34,11 +34,8 @@ def extract_info(i):
     prod = i['normal_product']
     id = prod['id'] # ID is of no use now.
     name, quantity, quantity_in_kg, normal_price = prod['name'], prod['pack_qt'], prod['in_kg'], prod['price']
-    # pdb.set_trace()  
 
-    # -- TODO -- Urgent change, price need to be per kg, cause their price get changed with quantity weight
-    # so what needs to be done is: price/prod['in_kg'] and also in excel, change price to per kg by using formula
-    # print(name, prod['pack_qt'], prod['in_kg'] )
+
     price_per_kg = price/quantity_in_kg
     normal_price_per_kg = normal_price/quantity_in_kg
     # print((name, price))
@@ -98,34 +95,57 @@ def scrape():
     for item in flash_deal:
         extract_info(item)
     if count == 0:
-        print('No Update bro.')
+        print('No Update bro.\n')
     else:
         print(f'{count} items added & price changed.\n')
 
+if __name__ == '__main__':
+    #for t in range(1):
+    while True: # infinite loop forever
 
-for t in range(1):
-    # reset count and current-deal-items
-    count, current_deal_items = 0, []
+        # reset count and current-deal-items
+        count, current_deal_items = 0, []
 
-    scrape()
-    # print(FD)
-    FD.to_csv(saved_location, index=False)
+        scrape()
+        # print(FD)
+        FD.to_csv(saved_location, index=False)
 
-    next_deal_time = FD['End_time_string'].iloc[-1]
-    print('Come back at around %s'%next_deal_time)
-    print("Waiting 10 mins")
-    # sleep(10*60)  # in mins
+        # yes, we are saving the most important list, that is all the items in current deal
+        with open('items_list_current_deal.txt', 'w',encoding='utf-8') as ff:
+            ff.write('\n'.join(current_deal_items))
+
+        next_deal_time = FD['End_time_string'].iloc[-1]
+        print('Come back at around %s'%next_deal_time)
+
+
+        endt = int(FD['End_time'].iloc[-1])
+        current_time = int(datetime.utcnow().timestamp())
+
+        wait_time_second = endt - current_time
+        print('Auto Refresh On: Waiting... %s sec'%wait_time_second)
+
+        sleep(wait_time_second + 60)
 
 # some insight from the data
 # df = FD
 # # Calculate discount percentage
 # df['Discount'] = (df['Diff.']/df['Normal Price'])*100
 # df['Discount'] = df.Discount.round(1)
-# 
 
 # print(current_deal_items)
-# Create beautiful graph for each items once done scraping
+
+
+# Create beautiful graph for each items once done scraping and save them
 def create_graph():
+    df = pd.read_csv('Flash_deal_product_list.csv')
+    
+    # sad that you assumed the current_deal_items wrong
+    # current_deal_items = df[df['Start_time'] == df['Start_time'].iloc[-1]]['Item'].to_list()
+    
+    with open('items_list_current_deal.txt', 'r',encoding='utf-8') as f:
+        current_deal_items = f.read().split('\n')
+
+
     # play around on jupyter notebook for now
     current_time = int(time())
     current_time = datetime.fromtimestamp(current_time)
@@ -166,7 +186,8 @@ def create_graph():
         # plt.show()
         plt.savefig(f'./static/img/{title}.png')
         plt.close()
-
+    
+    return current_deal_items
 # create_graph()
 
 
