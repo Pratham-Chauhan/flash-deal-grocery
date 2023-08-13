@@ -139,13 +139,13 @@ if __name__ == '__main__':
 def create_graph():
     df = pd.read_csv('Flash_deal_product_list.csv')
     
-    # sad that you assumed the current_deal_items wrong
-    # current_deal_items = df[df['Start_time'] == df['Start_time'].iloc[-1]]['Item'].to_list()
+   
+    try:
+        with open('items_list_current_deal.txt', 'r',encoding='utf-8') as f:
+            current_deal_items = f.read().split('\n')
+    except:
+        current_deal_items = df['Item'].unique().tolist() 
     
-    with open('items_list_current_deal.txt', 'r',encoding='utf-8') as f:
-        current_deal_items = f.read().split('\n')
-
-
     # play around on jupyter notebook for now
     current_time = int(time())
     current_time = datetime.fromtimestamp(current_time)
