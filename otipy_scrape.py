@@ -136,9 +136,29 @@ if __name__ == '__main__':
 
 
 # Create beautiful graph for each items once done scraping and save them
-def create_graph():
-    df = pd.read_csv('Flash_deal_product_list.csv')
+def download_from_mega(): 
+    from mega import Mega
+
+    mega = Mega()
+
+    email = 'pc.tech2600@gmail.com'
+    password = 'megaforpratham2612'
     
+    # Login
+    print("login to Mega...")
+    m = mega.login(email, password)
+    
+    file = m.find('Flash_deal_product_list.csv')
+    m.download(file)
+    print('data file downloaded')
+    
+
+def create_graph():
+    download_from_mega()
+
+    print('reading data...')
+    df = pd.read_csv(saved_location)
+    print(df.head().to_string())
    
     try:
         with open('items_list_current_deal.txt', 'r',encoding='utf-8') as f:
