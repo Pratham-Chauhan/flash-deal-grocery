@@ -10,6 +10,3 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template('home.html', menu_items=otp.create_graph())
-
-if __name__ == '__main__':
-    app.run(debug=True)
