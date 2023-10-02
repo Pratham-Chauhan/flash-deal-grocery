@@ -4,3 +4,4 @@ pandas
 numpy
 mega.py
 matplotlib
+Gunicorn
