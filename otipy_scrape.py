@@ -154,7 +154,7 @@ def download_from_mega():
     
 
 def create_graph():
-    download_from_mega()
+    # download_from_mega()
 
     print('reading data...')
     df = pd.read_csv(saved_location)
