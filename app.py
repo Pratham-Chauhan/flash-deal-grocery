@@ -58,11 +58,11 @@ def create_graph():
         plt.step(x, y, '-', where='post')
 
         # plt.show()
-        # plt.close()
 
         # Save the image
         plt.savefig(f'./static/img/{title}.png')
 
+        plt.close()
     return current_deal_items
 
 
