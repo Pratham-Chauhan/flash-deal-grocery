@@ -79,4 +79,4 @@ def index():
     return render_template('home.html', menu_items=create_graph())
 
 
-app.run()
+# app.run()
