@@ -86,6 +86,7 @@ def scrape():
     x = requests.get('https://gcptest.crofarm.com/otipy/web/feed/v1/',
                      params=params, headers=headers)
     if x.status_code != 200:
+        print('Request Error:', x.status_code)
         return
 
     jdata = x.json()['data']['widget_list']
@@ -110,7 +111,7 @@ if __name__ == '__main__':
         # print(FD)
         FD.to_csv(saved_location, index=False)
 
-        # yes, we are saving the most important list, that is all the items in current deal
+        # saving item's name in current flash deal
         with open('items_list_current_deal.txt', 'w',encoding='utf-8') as ff:
             ff.write('\n'.join(current_deal_items))
 
@@ -126,6 +127,12 @@ if __name__ == '__main__':
 
         sleep(wait_time_second + 60)
 
+
+
+
+
+
+
 # some insight from the data
 # df = FD
 # # Calculate discount percentage
@@ -133,81 +140,5 @@ if __name__ == '__main__':
 # df['Discount'] = df.Discount.round(1)
 
 # print(current_deal_items)
-
-
-# Create beautiful graph for each items once done scraping and save them
-def download_from_mega(): 
-    from mega import Mega
-
-    mega = Mega()
-
-    email = 'pc.tech2600@gmail.com'
-    password = 'megaforpratham2612'
-    
-    # Login
-    print("login to Mega...")
-    m = mega.login(email, password)
-    
-    file = m.find('Flash_deal_product_list.csv')
-    m.download(file)
-    print('data file downloaded')
-    
-
-def create_graph():
-    # download_from_mega()
-
-    print('reading data...')
-    df = pd.read_csv(saved_location)
-    print(df.head().to_string())
-   
-    try:
-        with open('items_list_current_deal.txt', 'r',encoding='utf-8') as f:
-            current_deal_items = f.read().split('\n')
-    except:
-        current_deal_items = df['Item'].unique().tolist() 
-    
-    # play around on jupyter notebook for now
-    current_time = int(time())
-    current_time = datetime.fromtimestamp(current_time)
-    
-    plt.style.use('bmh')
-    # fig = plt.figure(figsize=(15,6))
-
-    for name in current_deal_items:
-        df3 = df[df.Item == name] # filter each item by their name
-        
-        x = df3['Start_time'].apply(datetime.fromtimestamp).to_numpy()
-        x = np.append(x, np.datetime64(current_time))
-
-        y = df3['Price per kg'].to_numpy()
-        y = np.append(y, y[-1])
-
-        y2 = df3['Normal Price per kg'].to_numpy()
-        y2 = np.append(y2, y2[-1])
-
-        print("X : ", x,"\nY:", y)
-
-
-
-        ''' Customize the style '''
-        # Format the date ticks on the x-axis
-        date_format = mdates.DateFormatter('%I:%M %p\n %b-%d ')  # Customize the format as per your preference
-        plt.gca().xaxis.set_major_formatter(date_format)
-        plt.xticks(rotation=30)
-
-        plt.grid(True, linestyle='--', linewidth=0.5)
-        # plt.tick_params(axis='both', labelsize=18)  
-        title = df3['Item'].iloc[0]
-        plt.title(title)
-
-        plt.step(x, y2, '-', where='post')
-        plt.step(x, y, '-', where='post')
-        
-        # plt.show()
-        plt.savefig(f'./static/img/{title}.png')
-        plt.close()
-    
-    return current_deal_items
-# create_graph()
 
 
