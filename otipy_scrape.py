@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
 
         endt = int(FD['End_time'].iloc[-1])
-        current_time = int(datetime.utcnow().timestamp())
+        current_time = int(datetime.now().timestamp())
 
         wait_time_second = endt - current_time
         print('Auto Refresh On: Waiting... %s sec'%wait_time_second)

@@ -1,13 +1,20 @@
 from flask import Flask, render_template
 import subprocess
 
+import pandas as pd
+from datetime import datetime
+from time import sleep, time
+
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import numpy as np
+
 # Create beautiful graph for each items and save them
-
-
+saved_location = './Flash_deal_product_list.csv'
 def create_graph():
 
     print('reading data from csv...')
-    df = pd.read_csv('Flash_deal_product_list.csv')
+    df = pd.read_csv(saved_location)
     # print(df.head().to_string())
 
     try:   # look for current item's name in the flash deal
@@ -70,3 +77,6 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template('home.html', menu_items=create_graph())
+
+
+app.run()
