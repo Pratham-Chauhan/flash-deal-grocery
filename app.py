@@ -29,6 +29,7 @@ def create_graph():
     plt.style.use('bmh')
     # fig = plt.figure(figsize=(15,6))
     for name in current_deal_items:
+        print('Generating graph for', name)
         df3 = df[df.Item == name]  # filter each item by their name
 
         x = df3['Start_time'].apply(datetime.fromtimestamp).to_numpy()
