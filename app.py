@@ -68,8 +68,8 @@ def create_graph():
 
 
 # run scraping process in backgroud
-print('Running scraping script in new process...')
-subprocess.Popen(["python3", "otipy_scrape.py"])
+# print('Running scraping script in new process...')
+# subprocess.Popen(["python3", "otipy_scrape.py"])
 
 # print(create_graph())
 app = Flask(__name__)
@@ -80,4 +80,4 @@ def index():
     return render_template('home.html', menu_items=create_graph())
 
 
-# app.run()
+app.run()
